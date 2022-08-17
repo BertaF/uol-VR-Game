@@ -1,0 +1,94 @@
+{
+    "name": "ForkliftControls",
+    "maps": [
+        {
+            "name": "Forklift",
+            "id": "f4b6a5ee-b519-4ef2-9556-0cce3a041968",
+            "actions": [
+                {
+                    "name": "RaiseFork",
+                    "type": "PassThrough",
+                    "id": "59bd6193-200e-49bc-8e69-31ea5c54b36d",
+                    "expectedControlType": "Axis",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "LowerFork",
+                    "type": "PassThrough",
+                    "id": "ad5c0af1-08ef-4649-ad6d-505ea1e36ad1",
+                    "expectedControlType": "Axis",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "TiltForkIn",
+                    "type": "PassThrough",
+                    "id": "42ee9a4b-ad65-42af-af3e-2b9f63b106c9",
+                    "expectedControlType": "Axis",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "TiltForkOut",
+                    "type": "PassThrough",
+                    "id": "d52af0ed-7967-4fd0-a7dd-b737296ae664",
+                    "expectedControlType": "Axis",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "700bba26-1587-4926-b6b8-1031072a9a22",
+                    "path": "<Keyboard>/i",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "RaiseFork",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "6b9735ff-b255-41d0-ad5a-032c83b709c1",
+                    "path": "<Keyboard>/k",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "LowerFork",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "c26c0166-768e-4020-9663-3b20a95844a0",
+                    "path": "<Keyboard>/l",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "TiltForkIn",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "c846fafa-8185-438f-b869-d0048b53c0ee",
+                    "path": "<Keyboard>/j",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "TiltForkOut",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}
