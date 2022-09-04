@@ -1,7 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Assertions;
+﻿using UnityEngine;
 
 [RequireComponent(typeof(SVControllerInput))]
 [RequireComponent(typeof(Rigidbody))]
@@ -19,12 +16,6 @@ public class SVGrabbable : MonoBehaviour
     [Header("Pickup Settings")]
     [Tooltip("Defines if its it possible to pick this object up")]
     public bool canGrab = true;
-    [Tooltip("If true, this object can fly to your hand.")]
-    public bool shouldFly = true;
-    [Tooltip("How far the object can fly to your hand.")]
-    public float grabFlyDistance = .35f;
-    [Tooltip("How long it takes the object to complete its flight.")]
-    public float grabFlyTime = .1f;
 
     [Space(15)]
     [Header("Hold Settings")]
@@ -42,9 +33,6 @@ public class SVGrabbable : MonoBehaviour
     [Tooltip("If true a held object won't collide with anything and doesn't use inHandLerpSpeed, rather it sets its position directly.")]
     public bool ignorePhysicsInHand = true;
 
-    [Tooltip("If true, physics will work better with collisions for objects in your hand. This is really useful for things like joints, but it will make the object fall from your hand while moving around.")]
-    public bool locomotionSupported = false;
-
     [Tooltip("How quickly the object will match your hands position when moving. Higher values give you less lag but less realistic physics when interacting with immobile objects.")]
     [Range(0.0f, 1.0f)]
     public float inHandLerpSpeed = 0.4f;
@@ -55,10 +43,6 @@ public class SVGrabbable : MonoBehaviour
     [Space(15)]
     [Header("Collision Settings")]
 
-    [Tooltip("If you can knock the object around with your controller.")]
-    public bool isKnockable = true;
-    private bool lastKnockableValue = true;
-
     [HideInInspector]
     public bool inHand = false;
 
@@ -66,17 +50,15 @@ public class SVGrabbable : MonoBehaviour
     private SVAbstractGripIndicator gripIndicatorComponent;
     private SVControllerInput input;
 
-    // Private AND Static. Noice! Smort!
+    // Private AND Static.
     private static GameObject leftHandCollider;
     private static GameObject rightHandCollider;
 
     struct GrabData
     {
-        public float grabStartTime;
         public float grabEndTime;
         public bool recentlyReleased;
         public bool recentlyDropped;
-        public Vector3 grabStartPosition;
         public Quaternion grabStartLocalRotation;
         public Quaternion grabStartWorldRotation;
         public bool wasKinematic;
@@ -132,62 +114,25 @@ public class SVGrabbable : MonoBehaviour
     //------------------------
     // Update
     //------------------------
-    /* Why Fixed Update? Good Question kind sir / madam. It's so we can run BEFORE our physics calculations.  This enables us to force position to hand position while
+    /* It's so we can run BEFORE our physics calculations.  This enables us to force position to hand position while
      * still respecting the Unity physics engine. This is great when you hand joints connected to your objects.
 	*/
     private void FixedUpdate()
     {
-        if (!locomotionSupported) 
-        {
-            DoGrabbedUpdate();
-        }
-    }
-
-    /* Why Late Update? Good Question kind sir / madam. It's so we can run AFTER our physics calculations.  This enables us to lerp objects that you need to carry around with you
-     * think sword for example.
-	*/
-    void LateUpdate() 
-    {
-        if(locomotionSupported)
-        {
-            DoGrabbedUpdate();
-        }
+        DoGrabbedUpdate();
     }
 
     void DoGrabbedUpdate()
     {
-        if (this.input.activeController == SVControllerType.SVController_None) 
+        if (input.activeController == SVControllerType.SVController_None) 
         {
-            this.UngrabbedUpdate();
+            UngrabbedUpdate();
         } 
         else
         {
-            if (this.canGrab) 
+            if (canGrab) 
             {
-                this.GrabbedUpdate();
-            }
-        }
-
-        // Fix up our colliders in case we switched from not knockable to knockable
-        if (lastKnockableValue != isKnockable) 
-        {
-            lastKnockableValue = isKnockable;
-            if (leftHandCollider) 
-            {
-                Collider lhCol = leftHandCollider.GetComponent<Collider>();
-                foreach (Collider collider in colliders)
-                {
-                    Physics.IgnoreCollision(lhCol, collider, !isKnockable);
-                }
-            }
-
-            if (rightHandCollider) 
-            {
-                Collider rhCol = rightHandCollider.GetComponent<Collider>();
-                foreach (Collider collider in colliders)
-                {
-                    Physics.IgnoreCollision(rhCol, collider, !isKnockable);
-                }
+                GrabbedUpdate();
             }
         }
     }
@@ -196,12 +141,11 @@ public class SVGrabbable : MonoBehaviour
     {
         this.inHand = false;
 
-        // Reset our knockable state after dropping this bad boy
+        // Reset our knockable state after dropping this object
         if (grabData.recentlyReleased && (Time.time - grabData.grabEndTime) > kGrabResetTime) 
         {
             grabData.recentlyReleased = false;
             grabData.recentlyDropped = false;
-            this.isKnockable = grabData.wasKnockable;
         }
 
         // If we drop something, give it a little cooldown so it can drop to the floor before we snag it.
@@ -213,84 +157,27 @@ public class SVGrabbable : MonoBehaviour
         float distanceToLeftHand = 1000;
         if (input.LeftControllerIsConnected) 
         {
-            distanceToLeftHand = (this.transform.position - input.LeftControllerPosition).magnitude;
+            distanceToLeftHand = (transform.position - input.LeftControllerPosition).magnitude;
         }
 
         float distanceToRightHand = 1000;
         if (input.RightControllerIsConnected) 
         {
-            distanceToRightHand = (this.transform.position - input.RightControllerPosition).magnitude;
+            distanceToRightHand = (transform.position - input.RightControllerPosition).magnitude;
         }
 
-        // Within grabbing distance?
-        if (grabFlyDistance > distanceToLeftHand ||
-            grabFlyDistance > distanceToRightHand) 
+        if (gripIndicatorComponent) 
         {
-            float distance = Mathf.Min(distanceToLeftHand, distanceToRightHand);
-            if (this.gripIndicatorComponent)
-            {
-                float distanceForHighlight = grabFlyDistance / 4f;
-                float highlight = Mathf.Max(0, Mathf.Min(1, (grabFlyDistance - distance) / distanceForHighlight));
-                gripIndicatorComponent.indicatorActive = highlight;
-            }
-
-            // order them based on distance
-            SVControllerType firstController = SVControllerType.SVController_None;
-            SVControllerType secondController = SVControllerType.SVController_None;
-
-            if (distanceToLeftHand < distanceToRightHand) 
-            {
-                if (SVControllerManager.nearestGrabbableToLeftController == this)
-                    firstController = SVControllerType.SVController_Left;
-
-                if (SVControllerManager.nearestGrabbableToRightController == this)
-                    secondController = SVControllerType.SVController_Right;
-            } 
-            else 
-            {
-                if (SVControllerManager.nearestGrabbableToRightController == this)
-                    firstController = SVControllerType.SVController_Right;
-
-                if (SVControllerManager.nearestGrabbableToLeftController == this)
-                    secondController = SVControllerType.SVController_Left;
-            }
-
-            TrySetActiveController(firstController);
-            TrySetActiveController(secondController);
-
-            // Update grabbable distance so we always grab the nearest object
-            if (distanceToLeftHand < SVControllerManager.distanceToLeftController ||
-                SVControllerManager.nearestGrabbableToLeftController == null ||
-                SVControllerManager.nearestGrabbableToLeftController == this) 
-            {
-                SVControllerManager.nearestGrabbableToLeftController = this;
-                SVControllerManager.distanceToLeftController = distanceToLeftHand;
-            }
-
-            if (distanceToRightHand < SVControllerManager.distanceToRightController ||
-                SVControllerManager.nearestGrabbableToRightController == null ||
-                SVControllerManager.nearestGrabbableToRightController == this) 
-            {
-                SVControllerManager.nearestGrabbableToRightController = this;
-                SVControllerManager.distanceToRightController = distanceToRightHand;
-            }
-
-        } 
-        else 
+            gripIndicatorComponent.indicatorActive = 0;
+        }
+        // Clear our object as nearest if it's not in grabbin range!
+        if (SVControllerManager.nearestGrabbableToRightController == this) 
         {
-            if (this.gripIndicatorComponent) 
-            {
-                gripIndicatorComponent.indicatorActive = 0;
-            }
-            // Clear our object as nearest if it's not in grabbin range!
-            if (SVControllerManager.nearestGrabbableToRightController == this) 
-            {
-                SVControllerManager.nearestGrabbableToRightController = null;
-            }
-            if (SVControllerManager.nearestGrabbableToLeftController == this) 
-            {
-                SVControllerManager.nearestGrabbableToLeftController = null;
-            }
+            SVControllerManager.nearestGrabbableToRightController = null;
+        }
+        if (SVControllerManager.nearestGrabbableToLeftController == this) 
+        {
+            SVControllerManager.nearestGrabbableToLeftController = null;
         }
     }
 
@@ -312,14 +199,14 @@ public class SVGrabbable : MonoBehaviour
 
         // Get target Rotation
         Quaternion targetRotation;
-        Quaternion controllerRotation = this.input.RotationForController(this.input.activeController);
-        if (this.forceRotationInHand) 
+        Quaternion controllerRotation = input.RotationForController(input.activeController);
+        if (forceRotationInHand) 
         {
-            targetRotation = controllerRotation * Quaternion.Euler(this.rotationInHand);
+            targetRotation = controllerRotation * Quaternion.Euler(rotationInHand);
         } 
         else 
         {
-            targetRotation = controllerRotation * this.grabData.grabStartLocalRotation;
+            targetRotation = controllerRotation * grabData.grabStartLocalRotation;
         }
 
 
@@ -328,7 +215,7 @@ public class SVGrabbable : MonoBehaviour
         if (this.input.activeController == SVControllerType.SVController_Left && mirrorXOffsetInLeftHand)
         {
             Matrix4x4 mirrorMatrix = Matrix4x4.Scale(new Vector3(-1, 1, 1));
-            Matrix4x4 offsetAndRotation = Matrix4x4.TRS(-positionOffsetInHand, Quaternion.Euler(this.rotationInHand), Vector3.one);
+            Matrix4x4 offsetAndRotation = Matrix4x4.TRS(-positionOffsetInHand, Quaternion.Euler(rotationInHand), Vector3.one);
             Matrix4x4 finalOffsetAndRotation = mirrorMatrix * offsetAndRotation;
 
             targetRotation = controllerRotation * Quaternion.LookRotation(finalOffsetAndRotation.GetColumn(2), finalOffsetAndRotation.GetColumn(1));
@@ -340,47 +227,37 @@ public class SVGrabbable : MonoBehaviour
             targetOffset = targetRotation * -positionOffsetInHand;
         }
 
-        float percComplete = (Time.time - this.grabData.grabStartTime) / this.grabFlyTime;
-        if (percComplete < 1 && this.shouldFly && !this.grabData.hasJoint) 
+        this.inHand = true;
+        Vector3 targetPosition = input.PositionForController(input.activeController);
+
+        // If we're moving too quickly and allow physics, drop the object. This also gives us the ability to drop it if you are trying to move it through
+        // a solid object.
+        if (!this.ignorePhysicsInHand &&
+            (transform.position - targetPosition).magnitude >= objectDropDistance) 
         {
-            this.inHand = false;
-            transform.position = Vector3.Lerp(this.grabData.grabStartPosition, this.input.PositionForController(this.input.activeController) + targetOffset, percComplete);
-            transform.rotation = Quaternion.Lerp(this.grabData.grabStartWorldRotation, targetRotation, percComplete);
+            grabData.recentlyDropped = true;
+            this.ClearActiveController();
+            return;
+        }
+
+        // If we've got a joint let's forget about setting the rotation and just focus on the position.
+        // This keeps us from losing our minds!
+        if (this.grabData.hasJoint)
+        {
+            transform.position = targetPosition + targetOffset;
         } 
         else 
-        {
-            this.inHand = true;
-            Vector3 targetPosition = this.input.PositionForController(this.input.activeController);
-
-            // If we're moving too quickly and allow physics, drop the object. This also gives us the ability to drop it if you are trying to move it through
-            // a solid object.
-            if (!this.ignorePhysicsInHand &&
-                (transform.position - targetPosition).magnitude >= objectDropDistance) 
+        {  // otherwise just lock to the hand position so there is no delay
+            if (this.ignorePhysicsInHand)
             {
-                grabData.recentlyDropped = true;
-                this.ClearActiveController();
-                return;
-            }
-
-            // If we've got a joint let's forget about setting the rotation and just focus on the position.
-            // This keeps us from losing our minds!
-            if (this.grabData.hasJoint)
-            {
-                transform.position = targetPosition + targetOffset;
+                this.transform.SetPositionAndRotation(targetPosition + targetOffset, targetRotation);
             } 
             else 
-            {  // otherwise just lock to the hand position so there is no delay
-                if (this.ignorePhysicsInHand)
-                {
-                    this.transform.SetPositionAndRotation(targetPosition + targetOffset, targetRotation);
-                } 
-                else 
-                {
-                    transform.position = Vector3.Lerp(this.transform.position, targetPosition + targetOffset, inHandLerpSpeed);
-                    transform.rotation = Quaternion.Lerp(this.transform.rotation, targetRotation, inHandLerpSpeed);
-                    rb.velocity = this.input.ActiveControllerVelocity();
-                    rb.angularVelocity = this.input.ActiveControllerAngularVelocity();
-                }
+            {
+                transform.position = Vector3.Lerp(this.transform.position, targetPosition + targetOffset, inHandLerpSpeed);
+                transform.rotation = Quaternion.Lerp(this.transform.rotation, targetRotation, inHandLerpSpeed);
+                rb.velocity = this.input.ActiveControllerVelocity();
+                rb.angularVelocity = this.input.ActiveControllerAngularVelocity();
             }
         }
     }
@@ -411,8 +288,6 @@ public class SVGrabbable : MonoBehaviour
 
         if (this.input.SetActiveController(controller)) 
         {
-            this.grabData.grabStartTime = Time.time;
-            this.grabData.grabStartPosition = this.gameObject.transform.position;
             this.grabData.grabStartWorldRotation = this.gameObject.transform.rotation;
             this.grabData.grabStartLocalRotation = Quaternion.Inverse(this.input.RotationForController(controller)) * this.grabData.grabStartWorldRotation;
             this.grabData.hasJoint = (this.gameObject.GetComponent<Joint>() != null);
@@ -435,12 +310,6 @@ public class SVGrabbable : MonoBehaviour
             else 
             {
                 rb.useGravity = false;
-            }
-
-            if (!grabData.recentlyReleased) 
-            {
-                grabData.wasKnockable = this.isKnockable;
-                this.isKnockable = false;
             }
         }
     }

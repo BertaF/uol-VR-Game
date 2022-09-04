@@ -796,6 +796,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true
+                },
+                {
+                    "name": "ToggleItemSnapAction",
+                    "type": "Button",
+                    "id": "49c00f6c-ddcd-4b00-80e2-61a85bbc40ad",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -974,6 +983,17 @@
                     "action": "Translate Anchor",
                     "isComposite": false,
                     "isPartOfComposite": true
+                },
+                {
+                    "name": "",
+                    "id": "c91308e4-b7d2-47a0-873a-b5cbdc999b12",
+                    "path": "<OculusTouchController>/primaryButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Generic XR Controller",
+                    "action": "ToggleItemSnapAction",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         },

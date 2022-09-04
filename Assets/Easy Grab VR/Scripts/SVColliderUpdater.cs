@@ -66,9 +66,6 @@ public class SVColliderUpdater : MonoBehaviour {
         bool cancelCollision = true;
         if (collision.gameObject.GetComponent<SVGrabbable>()) {
             SVGrabbable grabbable = collision.gameObject.GetComponent<SVGrabbable>();
-            if (grabbable.isKnockable) {
-                cancelCollision = false;
-            }
         }
 
         if (cancelCollision) {

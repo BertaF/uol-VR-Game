@@ -7,17 +7,22 @@ TagManager:
   - PlayerHand
   - HeightLever
   - TiltLever
+  - Lever
+  - SteeringWheel
+  - Chassis
+  - Pickup
+  - ForkliftObjectSnapPos
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - SteeringWheel
   - Water
   - UI
   - Player
   - Lever
-  - 
-  - 
+  - ForkliftChassis
+  - Forklift
   - 
   - 
   - 

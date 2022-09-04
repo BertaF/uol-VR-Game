@@ -6,7 +6,13 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/Prototype.unity
+    path: Assets/Scenes/MainMenu.unity
+    guid: 8671fd9739bf50745988e5eab25190d5
+  - enabled: 1
+    path: Assets/Scenes/JengaVRScene.unity
+    guid: 5a463281e6e238742a45430f11e82829
+  - enabled: 0
+    path: Assets/Scenes/JengaVR.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
   m_configObjects:
     Unity.XR.Oculus.Settings: {fileID: 11400000, guid: bfa1182bd221b4ca89619141f66f1260,

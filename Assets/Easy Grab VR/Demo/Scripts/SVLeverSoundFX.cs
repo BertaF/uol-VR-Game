@@ -1,10 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class SVLeverSoundFX : MonoBehaviour
 {
-    private SVLever lever;
+    private LeverController lever;
 
     [Header("Events")]
     [SerializeField] GameEvent ToggleLeverUp;
@@ -12,19 +10,19 @@ public class SVLeverSoundFX : MonoBehaviour
 
     private void Start()
     {
-        lever = GetComponent<SVLever>();
+        lever = GetComponent<LeverController>();
     }
 
     private void Update()
     {
-        if (lever.leverWasSwitched && lever.leverIsOn)
+        if (lever.LeverWasSwitched && lever.LeverIsOn)
         {
             if (ToggleLeverUp)
             {
                 ToggleLeverUp.Invoke();
             }
         }
-        else if (lever.leverWasSwitched && !lever.leverIsOn) 
+        else if (lever.LeverWasSwitched && !lever.LeverIsOn) 
         {
             if (ToggleLeverDown)
             {
