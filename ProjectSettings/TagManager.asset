@@ -12,6 +12,8 @@ TagManager:
   - Chassis
   - Pickup
   - ForkliftObjectSnapPos
+  - PickupGhost
+  - Score
   layers:
   - Default
   - TransparentFX

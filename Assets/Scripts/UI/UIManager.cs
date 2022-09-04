@@ -7,7 +7,9 @@ namespace Assets.Scripts.UI
     public class UIManager : MonoBehaviour
     {
         [SerializeField] private TextMeshProUGUI _textOverlay;
+        [SerializeField] private int _maxScore;
 
+        private int _score;
         private static string _mCurrentText;
         private static VehicleStatus _mCurrentStatus;
 
@@ -27,7 +29,10 @@ namespace Assets.Scripts.UI
             }
 
             _mCurrentStatus = VehicleStatus.Idle;
+
+            UpdateScore(0);
         }
+
         private void Update()
         {
             if (_textOverlay)
@@ -74,6 +79,19 @@ namespace Assets.Scripts.UI
         public static void SetCurrentStatus(VehicleStatus status)
         {
             _mCurrentStatus = status;
+        }
+
+        public void UpdateScore(int newScore)
+        {
+            if (!gameObject.CompareTag("Score")) return;
+
+            _score += newScore;
+            _textOverlay.text = $" {_score} / {_maxScore}";
+        }
+
+        public int GetScore()
+        {
+            return _score;
         }
     }
 }
