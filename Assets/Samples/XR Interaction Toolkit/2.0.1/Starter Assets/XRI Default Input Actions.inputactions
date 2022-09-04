@@ -798,9 +798,18 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "ToggleItemSnapAction",
+                    "name": "AttachItemSnapAction",
                     "type": "Button",
                     "id": "49c00f6c-ddcd-4b00-80e2-61a85bbc40ad",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "DetachItemSnapAction",
+                    "type": "Button",
+                    "id": "64f06901-17af-46ab-8b21-7ef284a94d97",
                     "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
@@ -991,7 +1000,18 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Generic XR Controller",
-                    "action": "ToggleItemSnapAction",
+                    "action": "AttachItemSnapAction",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "cb18b0e9-5e96-4e69-91ac-ba4ba01f5dbf",
+                    "path": "<OculusTouchController>/secondaryButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Generic XR Controller",
+                    "action": "DetachItemSnapAction",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

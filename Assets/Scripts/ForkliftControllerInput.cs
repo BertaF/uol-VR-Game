@@ -1,5 +1,4 @@
-﻿using Assets.Scripts.UI;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class ForkliftControllerInput : MonoBehaviour
 {

@@ -35,7 +35,7 @@ namespace Assets.Scripts
             //Speed Input
             if (InputDevices.GetDeviceAtXRNode(speedXrNode).TryGetFeatureValue(CommonUsages.trigger, out float triggerValue) && triggerValue > speedThreshold)
             {
-                if (_uiMgr && GetCurrentStatus() != VehicleStatus.Accelerate)
+                if (_uiMgr)
                 {
                     SetCurrentStatus(VehicleStatus.Accelerate);
                     _uiMgr.UpdateTextDisplay("-> Status: Accelerating", false);
@@ -47,7 +47,7 @@ namespace Assets.Scripts
             {
                 if (InputDevices.GetDeviceAtXRNode(reverseXrNode).TryGetFeatureValue(CommonUsages.trigger, out float reverseValue) && reverseValue > speedThreshold)
                 {
-                    if (_uiMgr && GetCurrentStatus() != VehicleStatus.Reverse)
+                    if (_uiMgr)
                     {
                         SetCurrentStatus(VehicleStatus.Reverse);
                         _uiMgr.UpdateTextDisplay("-> Status: Reversing", false);
@@ -58,13 +58,13 @@ namespace Assets.Scripts
                 else
                 {
                     _forkliftControllerInput.reverseInput = false;
-                }
 
-                // Clear the previous reverse or accelerate HUD messages if we are now idle.
-                if (GetCurrentStatus() == VehicleStatus.Accelerate || GetCurrentStatus() == VehicleStatus.Reverse)
-                {
-                    SetCurrentStatus(VehicleStatus.Idle);
-                    if (_uiMgr) _uiMgr.ResetText(GetCurrentText());
+                    // Clear the previous reverse or accelerate HUD messages if we are now idle.
+                    if (GetCurrentStatus() == VehicleStatus.Accelerate || GetCurrentStatus() == VehicleStatus.Reverse)
+                    {
+                        SetCurrentStatus(VehicleStatus.Idle);
+                        if (_uiMgr) _uiMgr.ResetText(GetCurrentText());
+                    }
                 }
 
                 _forkliftControllerInput.speedInput = false;
