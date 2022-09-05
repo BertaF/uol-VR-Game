@@ -9,17 +9,20 @@ namespace Assets.Scripts
     public class ForkliftControllerVRInput : MonoBehaviour
     {
         [Header("Vehicle Speed Settings")]
-        public float speedThreshold = 0.7f;
+        [SerializeField] private float _speedThreshold = 0.7f;
 
         [Header("Vehicle Handling Settings")]
-        public XRNode speedXrNode = XRNode.RightHand;
-        public XRNode reverseXrNode = XRNode.LeftHand;
+        [SerializeField] private XRNode _speedXrNode = XRNode.RightHand;
+        [SerializeField] private XRNode _reverseXrNode = XRNode.LeftHand;
 
         [Header("Vehicle Direction Settings")]
-        public HingeJoint wheel;
-        public float maxValue = 0.35f;
-        public float minValue = -0.35f;
-        public float turnThreshold = 0.2f;
+        [SerializeField] private HingeJoint _steeringWheel;
+        [SerializeField] private float _maxValue = 0.35f;
+        [SerializeField] private float _minValue = -0.35f;
+        [SerializeField] private float _turnThreshold = 0.2f;
+
+        [Header("Vehicle Game Events")] 
+        [SerializeField] private GameEvent _forkliftReverse;
 
         private ForkliftControllerInput _forkliftControllerInput;
         private UIManager _uiMgr;
@@ -32,8 +35,8 @@ namespace Assets.Scripts
 
         private void Update()
         {
-            //Speed Input
-            if (InputDevices.GetDeviceAtXRNode(speedXrNode).TryGetFeatureValue(CommonUsages.trigger, out float triggerValue) && triggerValue > speedThreshold)
+            // Check the controllers for the speed input values
+            if (InputDevices.GetDeviceAtXRNode(_speedXrNode).TryGetFeatureValue(CommonUsages.trigger, out float triggerValue) && triggerValue > _speedThreshold)
             {
                 if (_uiMgr)
                 {
@@ -41,11 +44,12 @@ namespace Assets.Scripts
                     _uiMgr.UpdateTextDisplay("-> Status: Accelerating", false);
                 }
 
-                _forkliftControllerInput.speedInput = true;
+                _forkliftControllerInput._speedInput = true;
             }
             else
             {
-                if (InputDevices.GetDeviceAtXRNode(reverseXrNode).TryGetFeatureValue(CommonUsages.trigger, out float reverseValue) && reverseValue > speedThreshold)
+                // Check the controllers for the reverse input values
+                if (InputDevices.GetDeviceAtXRNode(_reverseXrNode).TryGetFeatureValue(CommonUsages.trigger, out float reverseValue) && reverseValue > _speedThreshold)
                 {
                     if (_uiMgr)
                     {
@@ -53,11 +57,16 @@ namespace Assets.Scripts
                         _uiMgr.UpdateTextDisplay("-> Status: Reversing", false);
                     }
 
-                    _forkliftControllerInput.reverseInput = true;
+                    if (!_forkliftControllerInput._reverseInput)
+                    {
+                        _forkliftReverse?.Invoke();
+                    }
+
+                    _forkliftControllerInput._reverseInput = true;
                 }
                 else
                 {
-                    _forkliftControllerInput.reverseInput = false;
+                    _forkliftControllerInput._reverseInput = false;
 
                     // Clear the previous reverse or accelerate HUD messages if we are now idle.
                     if (GetCurrentStatus() == VehicleStatus.Accelerate || GetCurrentStatus() == VehicleStatus.Reverse)
@@ -67,18 +76,18 @@ namespace Assets.Scripts
                     }
                 }
 
-                _forkliftControllerInput.speedInput = false;
+                _forkliftControllerInput._speedInput = false;
             }
 
-            //Turn Input
-            float steeringNormal = Mathf.InverseLerp(minValue, maxValue, wheel.transform.localRotation.x);
+            // Normalised turn input
+            float steeringNormal = Mathf.InverseLerp(_minValue, _maxValue, _steeringWheel.transform.localRotation.x);
             float steeringRange = Mathf.Lerp(-1, 1, steeringNormal);
-            if (Mathf.Abs(steeringRange) < turnThreshold)
+            if (Mathf.Abs(steeringRange) < _turnThreshold)
             {
                 steeringRange = 0;
             }
 
-            _forkliftControllerInput.turnInput = steeringRange;
+            _forkliftControllerInput._turnInput = steeringRange;
         }
     }
 }

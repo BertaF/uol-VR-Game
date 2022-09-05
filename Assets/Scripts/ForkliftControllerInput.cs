@@ -1,96 +1,104 @@
 ﻿using UnityEngine;
 
-public class ForkliftControllerInput : MonoBehaviour
+namespace Assets.Scripts
 {
-    public Transform kartModel;
-    public Transform kartNormal;
-    public Rigidbody sphere;
-
-    float speed, currentSpeed;
-    float rotate, currentRotate;
-
-    [Header("INPUT")]
-    public float turnInput;
-    public bool speedInput;
-    public bool reverseInput;
-
-    [Header("Parameters")]
-    public float acceleration = 30f;
-    public float revAcceleration = 10f;
-    public float steering = 80f;
-    public float gravity = 10f;
-    public LayerMask layerMask;
-    public float steerAnimationSpeed = 0.1f;
-    public float steerAnimationAmount = 10;
-
-    [Header("Model Parts")]
-    public Transform[] frontWheels;
-    public Transform[] backWheels;
-
-    private void Update()
+    public class ForkliftControllerInput : MonoBehaviour
     {
-        // Follow Collider
-        transform.position = sphere.transform.position;
+        public float Speed, CurrentSpeed;
+        public float Rotate, CurrentRotate;
 
-        // Accelerate
-        if (speedInput)
-            speed = acceleration;
+        [SerializeField] private Transform _forkliftNormal;
+        [SerializeField] private Rigidbody _rbChassis;
 
-        // Reverse
-        if (reverseInput)
-            speed = -revAcceleration;
+        [Header("Steering Input")]
+        [SerializeField] public float _turnInput;
+        [SerializeField] public bool _speedInput;
+        [SerializeField] public bool _reverseInput;
 
-        // Steer
-        if (turnInput != 0)
+        [Header("Steering Parameters")]
+        [SerializeField] private float _acceleration = 20f;
+        [SerializeField] private float _revAcceleration = 10f;
+        [SerializeField] private float _steering = 10f;
+        [SerializeField] private float _gravity = 25f;
+        [SerializeField] private float _steerAnimationSpeed = 0.1f;
+        [SerializeField] private float _steerAnimationAmount = 8;
+
+        [SerializeField] private LayerMask _layerMask;
+
+        [Header("Model Parts")]
+        [SerializeField] private Transform[] _frontWheels;
+        [SerializeField] private Transform[] _backWheels;
+
+        private void Update()
         {
-            int dir = turnInput > 0 ? 1 : -1;
-            float amount = Mathf.Abs((turnInput));
-            Steer(dir, amount);
+            // Set this transform position to be the same as the chassis collider
+            transform.position = _rbChassis.transform.position;
+
+            // Store the speed input when detected
+            if (_speedInput)
+                Speed = _acceleration;
+
+            // Store the reverse input when detected
+            if (_reverseInput)
+                Speed = -_revAcceleration;
+
+            // Set the steering direction if rotational input is detected 
+            if (_turnInput != 0.0f)
+            {
+                int dir = _turnInput > 0.0f ? 1 : -1;
+                float amount = Mathf.Abs((_turnInput));
+                Steer(dir, amount);
+            }
+
+            SetCurrentSpeedAndRotation();
+
+            _forkliftNormal.localEulerAngles = Vector3.Lerp(_forkliftNormal.localEulerAngles, 
+                new Vector3(0.0f, 90.0f + (_turnInput * _steerAnimationAmount), _forkliftNormal.localEulerAngles.z), _steerAnimationSpeed);
+
+            // Update the wheels rotation (front)
+            foreach (var item in _frontWheels)
+            {
+                item.localEulerAngles = new Vector3(0.0f, (_turnInput * _steering), item.localEulerAngles.z);
+                item.localEulerAngles += new Vector3(_rbChassis.velocity.magnitude / 2, 0, 0);
+            }
+
+            // Update the wheels rotation (rear)
+            foreach (var item in _backWheels)
+            {
+                item.localEulerAngles += new Vector3(_rbChassis.velocity.magnitude / 2, 0, 0);
+            }
         }
 
-        currentSpeed = speed;
-        speed = 0;
-        currentRotate = rotate;
-        rotate = 0;
-        //Animations
-
-        //a) Kart
-        kartModel.localEulerAngles = Vector3.Lerp(kartModel.localEulerAngles, new Vector3(0, 90 + (turnInput * steerAnimationAmount), kartModel.localEulerAngles.z), steerAnimationSpeed);
-
-        //b) Wheels
-        foreach (var item in frontWheels)
+        private void FixedUpdate()
         {
-            item.localEulerAngles = new Vector3(0, (turnInput * steering), item.localEulerAngles.z);
-            item.localEulerAngles += new Vector3(sphere.velocity.magnitude / 2, 0, 0);
+            // Add a forward force to the vehicle chassis
+            _rbChassis.AddForce(_forkliftNormal.transform.forward * CurrentSpeed, ForceMode.Acceleration);
+
+            // Add a gravity force (down) to the vehicle chassis
+            _rbChassis.AddForce(Vector3.down * _gravity, ForceMode.Acceleration);
+
+            // Gradually rotate this transform in the direction given by the steering input
+            transform.eulerAngles = Vector3.Lerp(transform.eulerAngles, new Vector3(0, transform.eulerAngles.y + CurrentRotate, 0), Time.deltaTime * 5.0f);
+
+            // Making sure the vehicle normal is upright before rotating in the directin of the steering input
+            Physics.Raycast(transform.position + (transform.up * .1f), Vector3.down, out _, 1.1f, _layerMask);
+            Physics.Raycast(transform.position + (transform.up * .1f), Vector3.down, out var hitNear, 2.0f, _layerMask);
+
+            _forkliftNormal.up = Vector3.Lerp(_forkliftNormal.up, hitNear.normal, Time.fixedDeltaTime * 8.0f);
+            _forkliftNormal.Rotate(0.0f, transform.eulerAngles.y, 0.0f);
         }
 
-        foreach (var item in backWheels)
+        public void Steer(int direction, float amount)
         {
-            item.localEulerAngles += new Vector3(sphere.velocity.magnitude / 2, 0, 0);
+            Rotate = (_steering * direction) * amount;
         }
-    }
 
-    private void FixedUpdate()
-    {
-        // Forward Acceleration
-        sphere.AddForce(kartModel.transform.forward * currentSpeed, ForceMode.Acceleration);
-
-        // Gravity
-        sphere.AddForce(Vector3.down * gravity, ForceMode.Acceleration);
-
-        // Steering
-        transform.eulerAngles = Vector3.Lerp(transform.eulerAngles, new Vector3(0, transform.eulerAngles.y + currentRotate, 0), Time.deltaTime * 5f);
-
-        Physics.Raycast(transform.position + (transform.up * .1f), Vector3.down, out _, 1.1f, layerMask);
-        Physics.Raycast(transform.position + (transform.up * .1f), Vector3.down, out var hitNear, 2.0f, layerMask);
-
-        // Normal Rotation
-        kartNormal.up = Vector3.Lerp(kartNormal.up, hitNear.normal, Time.fixedDeltaTime * 8.0f);
-        kartNormal.Rotate(0, transform.eulerAngles.y, 0);
-    }
-
-    public void Steer(int direction, float amount)
-    {
-        rotate = (steering * direction) * amount;
+        private void SetCurrentSpeedAndRotation()
+        {
+            CurrentSpeed = Speed;
+            Speed = 0.0f;
+            CurrentRotate = Rotate;
+            Rotate = 0.0f;
+        }
     }
 }
