@@ -42,7 +42,7 @@ namespace Assets.Scripts
             if (_reverseInput)
                 Speed = -_revAcceleration;
 
-            // Set the steering direction if rotational input is detected 
+            // Set the steering direction if rotational input is detected
             if (_turnInput != 0.0f)
             {
                 int dir = _turnInput > 0.0f ? 1 : -1;
@@ -52,7 +52,7 @@ namespace Assets.Scripts
 
             SetCurrentSpeedAndRotation();
 
-            _forkliftNormal.localEulerAngles = Vector3.Lerp(_forkliftNormal.localEulerAngles, 
+            _forkliftNormal.localEulerAngles = Vector3.Lerp(_forkliftNormal.localEulerAngles,
                 new Vector3(0.0f, 90.0f + (_turnInput * _steerAnimationAmount), _forkliftNormal.localEulerAngles.z), _steerAnimationSpeed);
 
             // Update the wheels rotation (front)

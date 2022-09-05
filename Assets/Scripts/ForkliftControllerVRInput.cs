@@ -21,8 +21,11 @@ namespace Assets.Scripts
         [SerializeField] private float _minValue = -0.35f;
         [SerializeField] private float _turnThreshold = 0.2f;
 
-        [Header("Vehicle Game Events")] 
+        [Header("Vehicle Game Events")]
         [SerializeField] private GameEvent _forkliftReverse;
+
+        [Header("Vehicle Game Events")]
+        [SerializeField] GameEvent ForkliftReverse;
 
         private ForkliftControllerInput _forkliftControllerInput;
         private UIManager _uiMgr;
