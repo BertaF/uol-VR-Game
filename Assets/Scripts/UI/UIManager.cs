@@ -9,6 +9,9 @@ namespace Assets.Scripts.UI
         [SerializeField] private TextMeshProUGUI _textOverlay;
         [SerializeField] private int _maxScore;
 
+        [Header("Score Game Events")]
+        [SerializeField] GameEvent PointScored;
+
         private int _score;
         private static string _mCurrentText;
         private static VehicleStatus _mCurrentStatus;
@@ -87,6 +90,11 @@ namespace Assets.Scripts.UI
 
             _score += newScore;
             _textOverlay.text = $" {_score} / {_maxScore}";
+
+            if (_score > 0)
+            {
+                PointScored?.Invoke();
+            }
         }
 
         public int GetScore()

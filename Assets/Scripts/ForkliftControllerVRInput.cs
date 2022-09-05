@@ -21,6 +21,9 @@ namespace Assets.Scripts
         public float minValue = -0.35f;
         public float turnThreshold = 0.2f;
 
+        [Header("Vehicle Game Events")] 
+        [SerializeField] GameEvent ForkliftReverse;
+
         private ForkliftControllerInput _forkliftControllerInput;
         private UIManager _uiMgr;
 
@@ -51,6 +54,11 @@ namespace Assets.Scripts
                     {
                         SetCurrentStatus(VehicleStatus.Reverse);
                         _uiMgr.UpdateTextDisplay("-> Status: Reversing", false);
+                    }
+
+                    if (!_forkliftControllerInput.reverseInput)
+                    {
+                        ForkliftReverse?.Invoke();
                     }
 
                     _forkliftControllerInput.reverseInput = true;

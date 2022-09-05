@@ -4,7 +4,7 @@ public class SVLeverSoundFX : MonoBehaviour
 {
     private LeverController lever;
 
-    [Header("Events")]
+    [Header("Lever Events")]
     [SerializeField] GameEvent ToggleLeverUp;
     [SerializeField] GameEvent ToggleLeverDown;
 
